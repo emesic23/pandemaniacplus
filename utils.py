@@ -116,7 +116,7 @@ def graph_partition(G, num_sections=10):
     return sections_info, node_to_community
 
 
-def seed_selection(G, node_to_community, num_seeds, num_random, sections_known):
+def seed_selection(G, node_to_community, num_seeds, sections_known, num_random=0):
     selected = []
 
     nodes_in_known = [node for node, community_index in node_to_community.items() if community_index in sections_known]
@@ -126,7 +126,7 @@ def seed_selection(G, node_to_community, num_seeds, num_random, sections_known):
     total_degrees = 2 * known_sg.number_of_edges()
     degrees = {node:degree/total_degrees for node, degree in degrees}
     p_degrees = degrees.values()
-    
+
     selected = list(np.random.choice(known_sg.nodes(), num_seeds - num_random, replace=False, p=p_degrees))
 
     while len(selected) != num_seeds:

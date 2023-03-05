@@ -4,6 +4,8 @@ import networkx as nx
 import neat
 
 NUM_ROUNDS = 4
+NUM_SEEDS = 10
+POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 graph_info = []
 def eval_genomes_ta_g(genomes, config):
     global graph_info
@@ -28,13 +30,34 @@ def eval_genomes_ta_o(genomes, config):
 # Run the sim for every round and set the fitness to the total jungle points. 
 def eval_genomes_jungle(genomes, config):
     global graph_info
+    global G
+    global node_to_community
+    global num_seeds
+    
     for genome_id, genome in genomes:
         genome.fitness = 0.0
-        net = neat.nn.FeedForwardNetwork.create(genome, config)
+        rand_opps = np.array(genome)
+        rand_opps = np.concatenate(rand_opps, np.random.choice(genomes, 10, replace=False))
+        nets = [neat.nn.FeedForwardNetwork.create(struct, config) for struct in rand_opps]
+        known_info = {agent:set() for agent in range(len(rand_opps))}
+        money = np.array([1000 for i in range(len(rand_opps))])
         for round in range(NUM_ROUNDS):
-            output = net.activate(graph_info)
+            bids = []
+            for net in nets:
+                bids.append(net.activate(graph_info))
+            bids = np.array(bids)
+            winners = np.argmax(bids, axis=0)
+            for i, winner in enumerate(winners):
+                known_info[winner].add(i)
+                money[winner] -= bids[winner, i]
+        seedings = [frozenset(seed_selection(G, node_to_community, num_seeds, known_info[agent]) for agent in range(len(rand_opps)))]
+        output = sim_jungle(A, seedings)
+        output = np.flip(np.argsort(output))
 
-            genome.fitness -= (output[0] - xo[0]) ** 2
+        for i, idx in enumerate(output):
+            if idx == 0:
+                genome.fitness += POINTS_VALUES[i]
+        
 
 
 def run(config_file):
@@ -65,11 +88,6 @@ def run(config_file):
         output = winner_net.activate(xi)
         print("input {!r}, expected output {!r}, got {!r}".format(xi, xo, output))
 
-    node_names = {-1: 'A', -2: 'B', 0: 'A XOR B'}
-    visualize.draw_net(config, winner, True, node_names=node_names)
-    visualize.draw_net(config, winner, True, node_names=node_names, prune_unused=True)
-    visualize.plot_stats(stats, ylog=False, view=True)
-    visualize.plot_species(stats, view=True)
 
     p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-4')
     p.run(eval_genomes, 10)
