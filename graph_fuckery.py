@@ -4,7 +4,7 @@ import os
 
 def process_graph_file(filename):
     # Open the file for reading
-    with open(filename, 'r') as f:
+    with open('graphs/snap/raw/' + filename, 'r') as f:
         # Read in the number of nodes
         num_nodes = int(f.readline())
 
@@ -17,11 +17,15 @@ def process_graph_file(filename):
 
         # Add edges to the graph
         for line in f:
-            edge = tuple(map(int, line.strip().split()))
-            G.add_edge(*edge)
+            try:
+                edge = tuple(map(int, line.strip().split()[:2]))
+                G.add_edge(*edge)
+            except:  
+                edge = tuple(map(int, line.strip().split(',')[:2]))
+                G.add_edge(*edge)
 
     # Pickle the graph
-    with open('graphs/snap/pickled/filename.pkl', 'wb') as f:
+    with open('graphs/snap/pickled/' + filename.split('.')[0] + '.pkl', 'wb+') as f:
         pickle.dump(G, f)
 
 for filename in os.listdir('graphs/snap/raw'):
