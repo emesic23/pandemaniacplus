@@ -1,0 +1,583 @@
+<!DOCTYPE 5>
+<html>
+  <head>
+    <title>Pandemaniac++</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous"/>
+    <link rel="stylesheet" href="/css/spacer.css"/>
+    <link rel="stylesheet" href="/css/submit-form.css"/>
+  </head>
+  <body>
+    <link rel="stylesheet" href="/css/header.css"/>
+    <div class="container">
+      <div class="pb-2 mt-5 mb-4 border-bottom">
+        <h1>Pandemaniac<span id="header-h1">++ </span><small id="header-small">competing epidemics</small></h1>
+      </div>
+    </div>
+    <div class="container">
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 border-end">
+          <div class="card my-1 border-0 border-bottom">
+            <div class="card-header bg-white border-0">
+              <h4 class="card-title mb-0 fw-light"><span class="float-start">Team Balance: </span><span class="float-end" id="cur-balance">1000</span><span class="float-end">$</span></h4>
+            </div>
+          </div>
+          <div class="card my-1 border-0 border-bottom">
+            <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#graph-info" aria-expanded="false" aria-controls="#graph-info" role="button">
+              <h4 class="card-title mb-0 fw-light"> <span class="float-start">Graph Info</span><i class="float-end fa-sharp fa-solid fa-bars"></i></h4>
+            </div>
+            <div class="wrapper collapse" id="graph-info"> 
+              <div class="card-body"> 
+                <h6 class="mb-3 fw-light"><span class="float-start">Graph Name</span><span class="float-end" id="graph-id">J.20.16</span></h6><br/>
+                <h6 class="mb-3 fw-light"><span class="float-start">Round</span><span class="float-end" id="graph-id">1</span></h6><br/>
+                <h6 class="mb-3 fw-light"> <span class="float-start">Sections</span><span class="float-end" id="num-sections">10</span></h6><br/>
+                <h6 class="mb-3 fw-light"> <span class="float-start">Last Bid</span><span class="float-end" id="last-total-bid">0</span><span class="float-end">$</span></h6>
+              </div>
+            </div>
+          </div>
+          <div class="card my-1 border-0 border-bottom"> 
+            <div class="card-header bg-white border-0 cursor-pointer" data-bs-toggle="collapse" data-bs-target="#graph-settings" aria-expanded="false" aria-controls="#graph-settings" role="button">
+              <h4 class="card-title mb-0 fw-light"> <span class="float-start">Graph Settings</span><i class="float-end fa-sharp fa-solid fa-bars"></i></h4>
+            </div>
+            <div class="wrapper collapse" id="graph-settings"> 
+              <div class="card-body"> 
+                <h6 class="mb-3 fw-light"> <span class="float-start">Random Nodes</span>
+                  <form class="float-end p-0 m-0" action="/submit/J.20.16/setting" method="post">
+                    <div class="input-group">
+                      <input class="form-control" type="number" name="random_nodes" style="border-radius: 0px 0 0 0px;" id="random-nodes-input" value="0" min="0" max="20" required="required"/>
+                      <div class="input-group-append"> 
+                        <button style="border-radius: 0 6px 6px 0; height: 15pt; font-size: 10pt">Set</button>
+                      </div>
+                    </div>
+                  </form>
+                </h6>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-9 overflow-scroll" style="height: 400px">
+          <div class="row">
+            <div id="sections-form">
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-0" aria-expanded="false" aria-controls="section-0" href="#0" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 0</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-0">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-0">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">168</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">194</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">3120</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-0">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-0" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-0" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-1" aria-expanded="false" aria-controls="section-1" href="#1" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 1</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-1">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-1">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">226</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">218</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">10269</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-1">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-1" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-1" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-2" aria-expanded="false" aria-controls="section-2" href="#2" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 2</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-2">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-2">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">168</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">279</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">9589</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-2">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-2" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-2" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-3" aria-expanded="false" aria-controls="section-3" href="#3" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 3</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-3">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-3">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">194</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">216</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">7140</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-3">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-3" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-3" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-4" aria-expanded="false" aria-controls="section-4" href="#4" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 4</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-4">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-4">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">434</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">160</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">6954</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-4">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-4" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-4" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-5" aria-expanded="false" aria-controls="section-5" href="#5" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 5</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-5">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-5">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">207</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">246</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">7605</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-5">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-5" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-5" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-6" aria-expanded="false" aria-controls="section-6" href="#6" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 6</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-6">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-6">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">25</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">132</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">457</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-6">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-6" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-6" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-7" aria-expanded="false" aria-controls="section-7" href="#7" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 7</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-7">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-7">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">286</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">200</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">6982</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-7">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-7" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-7" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-8" aria-expanded="false" aria-controls="section-8" href="#8" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 8</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-8">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-8">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">393</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">143</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">1817</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-8">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-8" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-8" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+              <div class="card my-1">
+                <div class="card-header cursor-pointer" data-bs-toggle="collapse" data-bs-target="#section-9" aria-expanded="false" aria-controls="section-9" href="#9" role="button">
+                  <h4 class="card-title mb-0"><span class="float-start">Section 9</span><span class="float-end fw-light pt-1 sec-cur-bid" style="font-size: 14pt" id="sec-bid-9">0</span><span class="float-end fw-light pt-1" style="font-size: 14pt">Current Bid: $</span></h4>
+                </div>
+                <div class="wrapper collapse" id="section-9">
+                  <div class="card-body">
+                    <table class="table table-bordered table-hover">
+                      <thead> 
+                        <tr>
+                          <th>specs</th>
+                          <th>value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr> 
+                          <th class="fw-normal">max degree</th>
+                          <th class="fw-normal">254</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">number of nodes</th>
+                          <th class="fw-normal">212</th>
+                        </tr>
+                        <tr> 
+                          <th class="fw-normal">total degrees</th>
+                          <th class="fw-normal">6980</th>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <form class="my-0" action="/submit/J.20.16/upload" method="post" enctype="application/json">
+                      <div class="row">
+                        <div class="col pt-1">
+                          <div class="float-end">
+                            <label class="d-inline-block me-1 fw-bold" for="bid-number-9">Bid: </label>
+                            <div class="d-inline-block">
+                              <div class="input-group">
+                                <div class="input-group-prepend"> <span class="input-group-text" style="border-radius: 6px 0 0 6px">$</span></div>
+                                <input class="form-control" id="bid-number-9" placeholder="0" type="number" style="border-radius: 0px 0 0 0px;" min="0" max="1000"/>
+                                <div class="input-group-append"> 
+                                  <button class="btn btn-outline-primary disabled" id="bid-confirm-9" type="button" style="border-radius: 0 6px 6px 0">Confirm</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row collapse mt-4" id="checkout">
+        <div class="col-md-4 offset-md-8">
+          <hr style="border-top: 1px solid black; margin-bottom: 5px"/>
+          <p class="float-start" style="font-size: 16pt; display: inline-block;">Graph Total bid: </p>
+          <p class="float-end" style="font-size: 16pt; display: inline-block;">$<span id="total-bid">0</span></p>
+        </div>
+        <div class="col-md-12">
+          <button class="btn btn-success float-end" id="submit-btn" type="submit" style="width: 160px; padding: 3px; font-size: 20px">Bid</button>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="spacer20"></div>
+      <ul class="nav nav-pills float-start">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/submit">Bid</a></li>
+        <li class="nav-item"><a class="nav-link" href="/results">Results</a></li>
+        <li class="nav-item"><a class="nav-link" href="/logout">Logout</a></li>
+      </ul>
+      <div class="spacer10"></div>
+      <p class="float-end text-muted">CS 144 | California Institute of Technology</p>
+    </div>
+    <script src="https://kit.fontawesome.com/9cecb51a78.js" crossorigin="anonymous"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="/js/submit-form.js"></script>
+  </body>
+</html>

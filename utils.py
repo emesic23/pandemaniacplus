@@ -3,6 +3,8 @@ import collections
 import networkx as nx
 import json
 from networkx.algorithms import community
+from bs4 import BeautifulSoup
+import re
 
 def sim_1v1(A, seed1, seed2):
     """
@@ -114,8 +116,7 @@ def graph_partition(G, num_sections=10):
         num_nodes = sg.number_of_nodes()
         sections_info.extend([highest_degree_val, num_edges, num_nodes])
     return sections_info, node_to_community
-
-
+# [highest degree, num_edges, num_nodes, ..., highest deg, num_edges, num_nodes]
 def seed_selection(G, node_to_community, num_seeds, sections_known, num_random=0):
     selected = []
 
@@ -124,14 +125,40 @@ def seed_selection(G, node_to_community, num_seeds, sections_known, num_random=0
 
     degrees = dict(known_sg.degree())
     total_degrees = 2 * known_sg.number_of_edges()
-    degrees = {node:degree/total_degrees for node, degree in degrees}
-    p_degrees = degrees.values()
+    if total_degrees != 0:
+        degrees = {node:degree/total_degrees for node, degree in degrees.items()}
+    else:
+        degrees = {node:1/known_sg.number_of_nodes() for node, degree in degrees.items()}
+    p_degrees = list(degrees.values())
 
-    selected = list(np.random.choice(known_sg.nodes(), num_seeds - num_random, replace=False, p=p_degrees))
+    if len(sections_known) != 0 and len(list(known_sg.nodes())) >= (num_seeds - num_random):
+        selected = list(np.random.choice(list(known_sg.nodes()), num_seeds - num_random, replace=False, p=p_degrees))
+
 
     while len(selected) != num_seeds:
-        random_node = np.random.choice(G.nodes(), 1)
+        random_node = np.random.choice(G.nodes(), 1)[0]
         if random_node not in selected:
             selected.append(random_node)
-    return selected
+    return frozenset(selected)
 
+def construct_input(filename, budget):
+    with open(filename, 'r') as f:
+        html = f.read()
+
+    # Find all <div> tags with class="wrapper collapse"
+    soup = BeautifulSoup(html, 'html.parser')
+    sections = soup.find_all('div', {'class': 'wrapper collapse', 'id': re.compile('section-*')})
+
+    # Loop through each section and extract the values from the <th> tags with class="fw-normal"
+    input = []
+
+    for section in sections:
+        max_degree = int(section.find('th', string='max degree').find_next_sibling('th').text)
+        num_nodes = int(section.find('th', string='number of nodes').find_next_sibling('th').text)
+        total_degrees = int(float(section.find('th', string='total degrees').find_next_sibling('th').text))
+
+        input.extend([max_degree, total_degrees / 2, num_nodes])
+
+    input.append(budget)
+
+    return input
