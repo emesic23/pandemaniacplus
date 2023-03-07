@@ -8,7 +8,7 @@ from tqdm import tqdm
 from datetime import datetime
 # ckpt 46
 import multiprocessing
-from neat.visualize
+import visualize
 
 NUM_ROUNDS = 4
 POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
