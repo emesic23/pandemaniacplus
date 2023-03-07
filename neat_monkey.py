@@ -8,6 +8,7 @@ from tqdm import tqdm
 from datetime import datetime
 # ckpt 46
 import multiprocessing
+from neat.visualize
 
 NUM_ROUNDS = 4
 POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -113,12 +114,12 @@ def eval_genomes_ta_multi(genomes, config, ta_bid):
     jobs = []
     for genome_id, genome in tqdm(genomes):
         genome.fitness = 0.0
-        jobs.append(pool.apply_async(eval_genome_multi, (genome, config, A, graph_info, NODE_TO_COMMUNITY, G, ta_bid)))
+        jobs.append(pool.apply_async(eval_genome_multi, (genome, config, A, graph_info, NODE_TO_COMMUNITY, G, ta_bid, NUM_SEEDS)))
 
     for job, (ignored_genome_id, genome) in tqdm(zip(jobs, genomes)):
             genome.fitness = job.get()
 
-def eval_genome_multi(genome, config, A, graph_info, NODE_TO_COMMUNITY, G, ta_bid):
+def eval_genome_multi(genome, config, A, graph_info, NODE_TO_COMMUNITY, G, ta_bid, NUM_SEEDS):
     n_players = 2
     net = neat.nn.FeedForwardNetwork.create(genome, config) 
     known_info = {i:set() for i in range(n_players)}
