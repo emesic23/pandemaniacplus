@@ -10,7 +10,6 @@ from datetime import datetime
 import multiprocessing
 
 NUM_ROUNDS = 4
-NUM_SEEDS = 10
 POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 graph_info = []
 G = None
@@ -53,9 +52,9 @@ def eval_genomes_ta_general(genomes, config, ta_bid):
     global graph_info
     global G
     global NODE_TO_COMMUNITY
-    global NUM_SEEDS
     global current_balance
 
+    NUM_SEEDS = 10
     n_players = 2
     diag = 1.5 * np.ones(G.order())
     A = nx.adjacency_matrix(G) + np.diag(diag)
@@ -105,9 +104,9 @@ def eval_genomes_ta_multi(genomes, config, ta_bid):
     global graph_info
     global G
     global NODE_TO_COMMUNITY
-    global NUM_SEEDS
     global current_balance
 
+    NUM_SEEDS = 10
     diag = 1.5 * np.ones(G.order())
     A = nx.adjacency_matrix(G) + np.diag(diag)
     graph_info, NODE_TO_COMMUNITY = graph_partition(G)
@@ -174,8 +173,9 @@ def eval_genomes_jungle(genomes, config):
     global graph_info
     global G
     global NODE_TO_COMMUNITY
-    global NUM_SEEDS
     global current_balance
+
+    NUM_SEEDS = 20
 
     diag = 1.5 * np.ones(G.order())
     A = nx.adjacency_matrix(G) + np.diag(diag)
@@ -232,6 +232,7 @@ def run(config_file):
     parser = argparse.ArgumentParser(description='A simple example of argparse')
     parser.add_argument('--graph', type=str, help='Graph to use')
     parser.add_argument('--tower', type=str, help='strategy (j, g, o)')
+    parser.add_argument('--gens', type=int, help="number of generations")
     args = parser.parse_args()
     graph_name = 'graphs/snap/pickled/' + args.graph + '.pkl'
 
@@ -255,15 +256,12 @@ def run(config_file):
     p.add_reporter(neat.Checkpointer(5, filename_prefix=f"{args.tower}-checkpoint-"))
 
     # Run for up to 300 generations.
-    match args.tower:
-        case 'j': 
-            winner = p.run(eval_genomes_jungle, 300)
-        case 'g':
-            winner = p.run(eval_genomes_ta_g, 300)
-        case 'o':
-            winner = p.run(eval_genomes_ta_o, 300)
-        case _:
-            raise Exception
+    if args.tower == 'j':  
+        winner = p.run(eval_genomes_jungle, args.gens)
+    elif args.tower == 'g':
+        winner = p.run(eval_genomes_ta_g, args.gens)
+    else:
+        winner = p.run(eval_genomes_ta_o, args.gens)
 
     with open(f"winning_genome.{args.tower}.pkl", "wb") as winning_file:
         pickle.dump(winner, winning_file)
