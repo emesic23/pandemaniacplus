@@ -5,6 +5,7 @@ import json
 from networkx.algorithms import community
 from bs4 import BeautifulSoup
 import re
+from datetime import datetime
 
 def sim_1v1(A, seed1, seed2):
     """
@@ -67,7 +68,7 @@ def sim_jungle(A, seeds):
                 curr[node,k]  = 1
 
     # Simulate until convergence or max iterations reached
-    max_iter = np.random.randint(100, 201)
+    max_iter = 10 #np.random.randint(100, 201)
     iter = 0
     prev = None
 
@@ -162,3 +163,57 @@ def construct_input(filename, budget):
     input.append(budget)
 
     return input
+
+def eval_genomes_jungle_multi(genomes, config):
+    global graph_info
+    global G
+    global NODE_TO_COMMUNITY
+    global NUM_SEEDS
+    global current_balance
+
+    diag = 1.5 * np.ones(G.order())
+    A = nx.adjacency_matrix(G) + np.diag(diag)
+    graph_info, NODE_TO_COMMUNITY = graph_partition(G)
+    jobs = []
+    for genome_id, genome in tqdm(genomes):
+        genome.fitness = 0.0
+        rand_opps = np.array([genome])
+        temp = np.array(genomes)
+        temp = temp[:, 1]
+        rand_opps = np.concatenate([rand_opps, np.random.choice(temp, 10, replace=False)])
+        jobs.append(pool.apply_async(eval_genome_multi, (rand_opps, config, A, graph_info, NODE_TO_COMMUNITY, G)))
+
+    for job, (ignored_genome_id, genome) in tqdm(zip(jobs, genomes)):
+            genome.fitness = job.get()
+
+def eval_genome_multi(rand_opps, config, A, graph_info, NODE_TO_COMMUNITY, G):
+    nets = [neat.nn.FeedForwardNetwork.create(struct, config) for struct in rand_opps]
+    known_info = {agent:set() for agent in range(len(rand_opps))}
+    money = np.array([1000 for i in range(len(rand_opps))])
+    fitness = 0
+    for round in range(NUM_ROUNDS):
+        bids = []
+        for i, net in enumerate(nets):
+            curr_info = graph_info.copy()
+            curr_info.append(money[i])
+            current_balance = money[i]
+            # print(net.activate(curr_info))
+            bids.append(output_activation(net.activate(curr_info), money[i]))
+        bids = np.array(bids)
+        for i, bid in enumerate(bids.T):
+            winners = np.argsort(bid)
+            known_info[winners[0]].add(i)
+            money[winners[0]] -= bids[winners[1], i]
+        if money[0] < 0:
+            fitness -= 500
+    # print(money)
+    seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(len(rand_opps))] for i in range(10)]
+    for seeding in seedings:
+        output = sim_jungle(A, seeding)
+        output = np.flip(np.argsort(output))
+
+        for i, idx in enumerate(output):
+            if idx == 0:
+                fitness += POINTS_VALUES[i]
+    return fitness
+
