@@ -164,6 +164,26 @@ def construct_input(filename, budget):
 
     return input
 
+def construct_params(filename):
+    with open(filename, 'r') as f:
+        html = f.read()
+
+    # Find all <div> tags with class="wrapper collapse"
+    soup = BeautifulSoup(html, 'html.parser')
+    sections = soup.find_all('div', {'class': 'wrapper collapse', 'id': re.compile('section-*')})
+
+    # Loop through each section and extract the values from the <th> tags with class="fw-normal"
+    max_degs = []
+    num_nodes = []
+    num_edges = []
+
+    for section in sections:
+        max_degs.append(int(section.find('th', string='max degree').find_next_sibling('th').text))
+        num_nodes.append(int(section.find('th', string='number of nodes').find_next_sibling('th').text))
+        num_edges.append(int(float(section.find('th', string='total degrees').find_next_sibling('th').text)))
+
+    return np.array(max_degs), np.array(num_nodes), np.array(num_edges)
+
 def eval_genomes_jungle_multi(genomes, config):
     global graph_info
     global G

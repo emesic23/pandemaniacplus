@@ -8,7 +8,6 @@ from tqdm import tqdm
 from datetime import datetime
 # ckpt 46
 import multiprocessing
-from neat.visualize
 
 NUM_ROUNDS = 4
 POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -40,14 +39,12 @@ def opportunistic_bid(graph_info, money):
     max_degree = np.array(max_degree)
     num_nodes = np.array(num_nodes)
     num_edges = np.array(num_edges)
-    
-    a = 2.357947691000002
-    b = 9.147537007594738e-14
-    c = 1
-    res = a * max_degree + b * num_nodes + c * num_edges
-    normalized = res / np.sum(res)
-    bid = normalized * money
+
+    metric = num_edges / num_nodes
+    norm = np.sum(metric)
+    bid = (money * metric / norm).astype(int)
     return bid
+
 
 def eval_genomes_ta_general(genomes, config, ta_bid):
     global graph_info
