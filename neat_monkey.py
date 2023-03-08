@@ -275,6 +275,7 @@ def eval_genomes_jungle(genomes, config):
         for round in range(NUM_ROUNDS):
             bids = []
             # For each network, generate inputs
+            num_rand = []
             for i, net in enumerate(nets):
                 # Save graph info
                 curr_info = graph_info.copy()
@@ -303,7 +304,7 @@ def eval_genomes_jungle(genomes, config):
 
                 # Get output and normalize
                 output = net.activate(curr_info)
-                network_bid = np.clip(np.array(output[:-1]), 0, np.inf) * sigmoid(output[-1]) * money[0]
+                network_bid = np.clip(np.array(output[:-2]), 0, np.inf) * sigmoid(output[-1]) * money[0]
 
                 # Penalize going over and normalize bids
                 if sum(network_bid) > money[i]:
@@ -311,6 +312,7 @@ def eval_genomes_jungle(genomes, config):
                     genomes[cur_genome_idx][1].fitness = -math.inf
                     network_bid = output_activation(network_bid, money[i])
 
+                num_rand.append(output[10])
         
                 bids.append(network_bid)
             bids = np.array(bids)
@@ -323,7 +325,7 @@ def eval_genomes_jungle(genomes, config):
                     num_known[section] += 1
                     money[winners[0]] -= bids[winners[1], section]
             # Run sim
-            seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(len(rand_opps))] for i in range(10)]
+            seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent], num_random = int(np.around(sigmoid(num_rand[agent]) * NUM_SEEDS))) for agent in range(len(rand_opps))] for i in range(10)]
 
             scores = np.zeros(len(rand_opps))
             for seeding in seedings:
