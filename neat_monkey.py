@@ -6,18 +6,41 @@ import neat
 import argparse
 from tqdm import tqdm
 from datetime import datetime
+import math
 # ckpt 46
 import multiprocessing
-<<<<<<< HEAD
-=======
-import visualize
->>>>>>> ff19c71ce509f22afc9b5421ef3e2896162df89f
+import math
+from neat import reporting
+import random
 
 NUM_ROUNDS = 4
-POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+POINTS_VALUES = [20, 15, 12, 9, 6, 4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+ROUND_VALUES = [1/6, 1/5, 3/10, 1/3]
 graph_info = []
-G = None
+#G = None
+graphs = []
+graph_names = ['bitcoin_otc', 'facebook', 'Gnutella08', 'arxiv_grqc']
 NODE_TO_COMMUNITY = None
+
+class CustomReporter(reporting.BaseReporter):
+    def __init__(self):
+        self.winners = []
+
+    def post_evaluate(self, config, population, species, best_genome):
+        # Record the winning genome for this generation
+        self.winners.append(best_genome)
+
+    def end_generation(self, config, population, species_set):
+        # Get the winning genome for this generation
+        winner = max(self.winners, key=lambda x: x.fitness)
+
+        # Report the number of nodes and connections in the winning genome
+        num_nodes = len(winner.nodes)
+        num_connections = len(winner.connections)
+        print('Winner has {} nodes and {} connections'.format(num_nodes, num_connections))
+
+        # Clear the list of winners for the next generation
+        self.winners = []
 
 
 def greedy_bid(graph_info, money):
@@ -29,7 +52,7 @@ def greedy_bid(graph_info, money):
     # zero all but top 3 max degrees
     max_degree[np.argsort(max_degree)[:-3]] = 0
     normalized_max_degree = max_degree / np.sum(max_degree)
-    bid = normalized_max_degree * money
+    bid = (normalized_max_degree * money).astype(int)
     return bid
 
 def opportunistic_bid(graph_info, money):
@@ -38,8 +61,8 @@ def opportunistic_bid(graph_info, money):
     num_edges = []
     for section in range(0, len(graph_info), 3):
         max_degree.append(graph_info[section])
-        num_nodes.append(graph_info[section+2])
-        num_edges.append(graph_info[section+1])
+        num_nodes.append(graph_info[section+1])
+        num_edges.append(graph_info[section+2])
     max_degree = np.array(max_degree)
     num_nodes = np.array(num_nodes)
     num_edges = np.array(num_edges)
@@ -52,9 +75,12 @@ def opportunistic_bid(graph_info, money):
 
 def eval_genomes_ta_general(genomes, config, ta_bid):
     global graph_info
-    global G
+    #global G
+    global graphs
     global NODE_TO_COMMUNITY
     global current_balance
+
+    G = np.random.choice(graphs)
 
     NUM_SEEDS = 10
     n_players = 2
@@ -69,11 +95,25 @@ def eval_genomes_ta_general(genomes, config, ta_bid):
         for round in range(NUM_ROUNDS):
             bids = []
         
-            # Bid for the network
+            # Build input for network
             curr_info = graph_info.copy()
-            curr_info.append(money[0])
-            current_balance = money[0]
-            bids.append(output_activation(net.activate(curr_info), money[0]))
+
+            for i in range(n_players):
+                curr_info.append(money[i])
+                for j in range(10):
+                    curr_info.append(j in known_info[i])
+            curr_info.append(round)
+            output = net.activate(curr_info)
+
+            # Bid for the network
+            network_bid = np.array(output[:-1]) 
+            network_bid = np.clip(network_bid, 0, np.inf) * sigmoid(output[-1]) * money[0]
+            
+            if sum(network_bid) > money[0]:
+                genome.fitness = -math.inf
+                break
+
+            bids.append(network_bid)
 
             # Bid for the greedy TA
             bids.append(ta_bid(graph_info.copy(), money[1]))
@@ -83,17 +123,16 @@ def eval_genomes_ta_general(genomes, config, ta_bid):
                 if bid[winners[0]] >= 1:
                     known_info[winners[0]].add(i)
                     money[winners[0]] -= bids[winners[1], i]
-            if money[0] < 0:
-                genome.fitness -= 500
-        # print(money)
-        seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(n_players)] for i in range(10)]
-        for seeding in seedings:
-            output = sim_1v1(A, seeding[0], seeding[1])
-            output = np.flip(np.argsort(output))
 
-            for i, idx in enumerate(output):
-                if idx == 0:
-                    genome.fitness += POINTS_VALUES[i]
+            seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(n_players)] for i in range(10)]
+            for seeding in seedings:
+                output = sim_1v1(A, seeding[0], seeding[1])
+                output = np.flip(np.argsort(output))
+
+                for i, idx in enumerate(output):
+                    if idx == 0:
+                        genome.fitness += POINTS_VALUES[i] * ROUND_VALUES[round]
+
             
             
 def eval_genomes_ta_g(genomes, config):
@@ -104,9 +143,12 @@ def eval_genomes_ta_o(genomes, config):
 
 def eval_genomes_ta_multi(genomes, config, ta_bid):
     global graph_info
-    global G
+    #global G
+    global graphs
     global NODE_TO_COMMUNITY
     global current_balance
+
+    G = np.random.choice(graphs)
 
     NUM_SEEDS = 10
     diag = 1.5 * np.ones(G.order())
@@ -130,32 +172,43 @@ def eval_genome_multi(genome, config, A, graph_info, NODE_TO_COMMUNITY, G, ta_bi
     for round in range(NUM_ROUNDS):
         bids = []
     
-        # Bid for the network
+        # Build input for network
         curr_info = graph_info.copy()
-        curr_info.append(money[0])
-        current_balance = money[0]
-        bids.append(output_activation(net.activate(curr_info), money[0]))
+
+        for i in range(n_players):
+            curr_info.append(money[i])
+            for j in range(10):
+                curr_info.append(j in known_info[i])
+        curr_info.append(round)
+        output = net.activate(curr_info)
+
+        # Bid for the network
+        network_bid = np.array(output[:-1]) 
+        network_bid = np.clip(network_bid, 0, np.inf) * sigmoid(output[-1]) * money[0]
+        
+        if sum(network_bid) > money[0]:
+            genome.fitness = -math.inf
+            break
+
+        bids.append(network_bid)
 
         # Bid for the greedy TA
         bids.append(ta_bid(graph_info.copy(), money[1]))
-
         bids = np.array(bids)
         for i, bid in enumerate(bids.T):
             winners = np.flip(np.argsort(bid))
             if bid[winners[0]] >= 1:
                 known_info[winners[0]].add(i)
                 money[winners[0]] -= bids[winners[1], i]
-        if money[0] < 0:
-            fitness -= 500
-    # print(money)
-    seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(n_players)] for i in range(10)]
-    for seeding in seedings:
-        output = sim_1v1(A, seeding[0], seeding[1])
-        output = np.flip(np.argsort(output))
 
-        for i, idx in enumerate(output):
-            if idx == 0:
-                fitness += POINTS_VALUES[i]
+        seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(n_players)] for i in range(10)]
+        for seeding in seedings:
+            output = sim_1v1(A, seeding[0], seeding[1])
+            output = np.flip(np.argsort(output))
+
+            for i, idx in enumerate(output):
+                if idx == 0:
+                    genome.fitness += POINTS_VALUES[i] * ROUND_VALUES[round]
 
     return fitness
 
@@ -172,16 +225,24 @@ def output_activation(x, current_balance):
     return [bid * scale_factor for bid in x]
 
 def eval_genomes_jungle(genomes, config):
+    # Global variables because only 2 parameters allowed
     global graph_info
-    global G
+    #global G
+    global graphs
     global NODE_TO_COMMUNITY
     global current_balance
 
+    G = random.choice(graphs)
+
+    # Usually 20 seeds
     NUM_SEEDS = 20
 
+    # Create Graph
     diag = 1.5 * np.ones(G.order())
     A = nx.adjacency_matrix(G) + np.diag(diag)
     graph_info, NODE_TO_COMMUNITY = graph_partition(G)
+
+    # 
     genomes_idx_dict = {i: genomes[i] for i in range(len(genomes))}
     tested = np.zeros(len(genomes))
     curr = 0
@@ -192,54 +253,112 @@ def eval_genomes_jungle(genomes, config):
     for genome_idx, (genome_id, genome) in tqdm(genomes_idx_dict.items()):
         if tested[genome_idx]:
             continue
+
+        if len(genome.connections) <= 70:
+            genome.fitness = 0.1
+            tested[genome_idx] = 1
+            continue
         
         rand_opps = np.array([genome])
         
-        rand_opps_idx = np.concatenate([np.array([genome_idx]), np.random.choice(np.setdiff1d(genomes_dict_keys, genome_idx), 10, replace=False)])
+        rand_opps_idx = np.concatenate([np.array([genome_idx]), np.random.choice(np.setdiff1d(genomes_dict_keys, genome_idx), 23, replace=False)])
 
         rand_opps = np.array([genomes_idx_dict[i][1] for i in rand_opps_idx])
         nets = [neat.nn.FeedForwardNetwork.create(struct, config) for struct in rand_opps]
         known_info = {agent:set() for agent in range(len(rand_opps))}
+        
+        # 10 sections
+        num_known = np.zeros(10)
         money = np.array([1000 for i in range(len(rand_opps))])
+
+        # Four rounds of bidding
         for round in range(NUM_ROUNDS):
             bids = []
+            # For each network, generate inputs
             for i, net in enumerate(nets):
+                # Save graph info
                 curr_info = graph_info.copy()
+
+                # Add money info
                 curr_info.append(money[i])
-                current_balance = money[i]
-                # print(net.activate(curr_info))
-                bids.append(output_activation(net.activate(curr_info), money[i]))
+                for j, _ in enumerate(nets):
+                    if j == i:
+                        continue
+                    curr_info.append(money[j])
+
+
+                # Add known info
+                for j in range(10):
+                    curr_info.append(j in known_info[i])
+                
+                # Add opponent info
+                curr_known_counts = num_known.copy()
+                if len(known_info[i]) != 0:
+                    curr_known_counts[np.array(known_info[i])] -= 1
+                
+                curr_info.extend(list(curr_known_counts))
+
+                # Add round
+                curr_info.append(round)
+
+                # Get output and normalize
+                output = net.activate(curr_info)
+                network_bid = np.clip(np.array(output[:-1]), 0, np.inf) * sigmoid(output[-1]) * money[0]
+
+                # Penalize going over and normalize bids
+                if sum(network_bid) > money[i]:
+                    cur_genome_idx = rand_opps_idx[i]
+                    genomes[cur_genome_idx][1].fitness = -math.inf
+                    network_bid = output_activation(network_bid, money[i])
+
+        
+                bids.append(network_bid)
             bids = np.array(bids)
-            for i, bid in enumerate(bids.T):
+            
+            # Run the auction
+            for section, bid in enumerate(bids.T):
                 winners = np.argsort(bid)
                 if bid[winners[0]] >= 1:
-                    known_info[winners[0]].add(i)
-                    money[winners[0]] -= bids[winners[1], i]
-        # print(money)
-        seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(len(rand_opps))] for i in range(10)]
-        for seeding in seedings:
-            output = sim_jungle(A, seeding)
-            output = np.flip(np.argsort(output))
-            # [scores * 11]
-            for i, idx in enumerate(output):
+                    known_info[winners[0]].add(section)
+                    num_known[section] += 1
+                    money[winners[0]] -= bids[winners[1], section]
+            # Run sim
+            seedings = [[seed_selection(G, NODE_TO_COMMUNITY, NUM_SEEDS, known_info[agent]) for agent in range(len(rand_opps))] for i in range(10)]
+
+            scores = np.zeros(len(rand_opps))
+            for seeding in seedings:
+                output = sim_jungle(A, seeding)
+                output = np.flip(np.argsort(output))
+                for i, idx in enumerate(output):
+                    scores[idx] += POINTS_VALUES[i]
+            
+            scores = np.flip(np.argsort(scores))
+            for i, idx in enumerate(scores):
                 cur_genome_idx = rand_opps_idx[idx]
                 if not tested[cur_genome_idx]:
-                    genomes[cur_genome_idx][1].fitness += POINTS_VALUES[i]
+                    genomes[cur_genome_idx][1].fitness += POINTS_VALUES[i] * ROUND_VALUES[round]
+
 
         tested[rand_opps_idx] = 1
             
 def run(config_file):
-    global G
+    global graphs
     print(multiprocessing.cpu_count())
     parser = argparse.ArgumentParser(description='A simple example of argparse')
-    parser.add_argument('--graph', type=str, help='Graph to use')
+    #parser.add_argument('--graph', type=str, help='Graph to use')
     parser.add_argument('--tower', type=str, help='strategy (j, g, o)')
     parser.add_argument('--gens', type=int, help="number of generations")
     args = parser.parse_args()
-    graph_name = 'graphs/snap/pickled/' + args.graph + '.pkl'
+    #graph_name = 'graphs/snap/pickled/' + args.graph + '.pkl'
 
-    with open(graph_name, 'rb') as file:
-        G = pickle.load(file)
+    # Open each graph once
+    for graph_name in graph_names:
+        graph_filename = 'graphs/snap/pickled/' + graph_name + '.pkl'
+        with open(graph_filename, 'rb') as file:
+            graphs.append(pickle.load(file))
+
+    # with open(graph_name, 'rb') as file:
+    #     G = pickle.load(file)
 
     config_file = f"{config_file}.{args.tower}.cfg"
     # Load configuration.
@@ -253,6 +372,7 @@ def run(config_file):
 
     # Add a stdout reporter to show progress in the terminal.
     p.add_reporter(neat.StdOutReporter(True))
+    p.add_reporter(CustomReporter())
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
     p.add_reporter(neat.Checkpointer(5, filename_prefix=f"{args.tower}-checkpoint-"))

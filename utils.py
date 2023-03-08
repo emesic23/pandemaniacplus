@@ -5,6 +5,7 @@ import json
 from networkx.algorithms import community
 from bs4 import BeautifulSoup
 import re
+import math
 from datetime import datetime
 
 def sim_1v1(A, seed1, seed2):
@@ -96,7 +97,7 @@ def graph_partition(G, num_sections=10):
     partition_size = len(node_list) // num_sections
     partition = [node_list[i:i+partition_size] for i in range(0, len(node_list), partition_size)]
 
-# Create a dictionary mapping nodes to their assigned communities
+    # Create a dictionary mapping nodes to their assigned communities
     node_to_community = {}
     for i, community in enumerate(partition):
         for node in community:
@@ -113,10 +114,12 @@ def graph_partition(G, num_sections=10):
         degrees = dict(sg.degree())
         highest_degree_node = max(degrees, key=degrees.get)
         highest_degree_val = degrees[highest_degree_node]
-        num_edges = sg.number_of_edges()
         num_nodes = sg.number_of_nodes()
-        sections_info.extend([highest_degree_val, num_edges, num_nodes])
+        #num_edges = sg.number_of_edges()
+        num_edges = sg.number_of_edges() + np.sum([G.degree[x] - sg.degree[x] for x in sg.nodes()])
+        sections_info.extend([highest_degree_val, num_nodes, num_edges])
     return sections_info, node_to_community
+
 # [highest degree, num_edges, num_nodes, ..., highest deg, num_edges, num_nodes]
 def seed_selection(G, node_to_community, num_seeds, sections_known, num_random=0):
     selected = []
@@ -134,7 +137,6 @@ def seed_selection(G, node_to_community, num_seeds, sections_known, num_random=0
 
     if len(sections_known) != 0 and len(list(known_sg.nodes())) >= (num_seeds - num_random):
         selected = list(np.random.choice(list(known_sg.nodes()), num_seeds - num_random, replace=False, p=p_degrees))
-
 
     while len(selected) != num_seeds:
         random_node = np.random.choice(G.nodes(), 1)[0]
@@ -156,7 +158,7 @@ def construct_input(filename, budget):
     for section in sections:
         max_degree = int(section.find('th', string='max degree').find_next_sibling('th').text)
         num_nodes = int(section.find('th', string='number of nodes').find_next_sibling('th').text)
-        total_degrees = int(float(section.find('th', string='total degrees').find_next_sibling('th').text))
+        total_degrees = int(float(section.find('th', string='unique edges (.5 = self edge)').find_next_sibling('th').text))
 
         input.extend([max_degree, total_degrees / 2, num_nodes])
 
@@ -180,7 +182,7 @@ def construct_params(filename):
     for section in sections:
         max_degs.append(int(section.find('th', string='max degree').find_next_sibling('th').text))
         num_nodes.append(int(section.find('th', string='number of nodes').find_next_sibling('th').text))
-        num_edges.append(int(float(section.find('th', string='total degrees').find_next_sibling('th').text)))
+        num_edges.append(int(float(section.find('th', string='unique edges (.5 = self edge)').find_next_sibling('th').text)))
 
     return np.array(max_degs), np.array(num_nodes), np.array(num_edges)
 
@@ -362,3 +364,8 @@ def eval_genome_multi(rand_opps, config, A, graph_info, NODE_TO_COMMUNITY, G):
                 fitness += POINTS_VALUES[i]
     return fitness
 
+def sigmoid(x):
+  try:
+      return 1 / (1 + math.exp(-x))
+  except OverflowError:
+      return 0.0 if x < 0 else 1.0
