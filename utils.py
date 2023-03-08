@@ -184,6 +184,131 @@ def construct_params(filename):
 
     return np.array(max_degs), np.array(num_nodes), np.array(num_edges)
 
+def assemble_info(graph, results):
+    filename_graph = 'graph_info_s1/' + graph + '.html'
+    filename_results = 'res_info_s1/' + results + '.html'
+
+    # Read in graph and results info from html files.
+    with open(filename_graph, 'r') as f:
+        html_graph = f.read()
+    with open(filename_results, 'r') as f:
+        html_results = f.read()
+
+    input = []
+
+    # Process graph info to determine basic info for each graph.
+    soup_graph = BeautifulSoup(html_graph, 'html.parser')
+    sections = soup_graph.find_all('div', {'class': 'wrapper collapse', 'id': re.compile('section-*')})
+
+    for section in sections:
+        max_deg = int(section.find('th', string='max degree').find_next_sibling('th').text)
+        num_nodes = int(section.find('th', string='number of nodes').find_next_sibling('th').text)
+        num_edges = int(float(section.find('th', string='unique edges (.5 = self edge)').find_next_sibling('th').text))
+
+        input.extend([max_deg, num_nodes, num_edges])
+
+    # Now look through each round in the results page to figure out rest of important info.
+    graph_type = graph[0].upper()
+    if graph_type == 'O' or graph_type == 'G':
+        size = 2
+    elif graph_type == 'J':
+        size = 24
+    else:
+        raise ValueError('Graph type is wrong')
+    
+    moneys = 1000 * np.ones(size)
+    placements = np.zeros(size)
+    sections = [set() for _ in range(size)]
+    bids = np.zeros((size, 10))
+
+    soup_results = BeautifulSoup(html_results, 'html.parser')
+    rounds = soup_results.find_all('div', {'class' : 'wrapper collapse', 'id' : re.compile('round*')})
+    round_num = 1
+
+    for round in rounds:
+        # First figure out if we've gone too far in the page (round hasn't occurred yet).
+        h5_tag = round.find('h5', string=graph)
+        if h5_tag is None:
+            break
+
+        # If so, parse first table for each team's bid and final clearing prices in this round.
+        table_tag = h5_tag.find_next_sibling('table')
+        tbody_tag = table_tag.find('tbody')
+        tr_tags = tbody_tag.find_all('tr')
+
+        i = 1
+        for row in tr_tags:
+            td_tags = row.find_all('td')
+            name = td_tags[0].text.strip()
+
+            if name == 'ModeloTime':
+                bids[0,:] = np.array([int(td.text.strip()) for td in td_tags[1:]])
+            elif name == 'Clearing Price':
+                clearing_prices = [int(td.text.strip()) for td in td_tags[1:]]
+            else:
+                bids[i,:] = np.array([int(td.text.strip()) for td in td_tags[1:]])
+                i += 1
+
+        #print(f'Bids: {bids}')
+        #print(f'Round {round_num} clearing prices: {clearing_prices}')
+
+        # Move on to results for each team.
+        table_tag = table_tag.find_next_sibling('table')
+        tbody_tag = table_tag.find('tbody')
+
+        # Look at ours first so we don't confuse the inputs.
+        our_tag = tbody_tag.find('td', string='ModeloTime')
+        our_placement_td = our_tag.find_next_sibling('td')
+        our_sections = set([int(x) for x in our_placement_td.find_next_sibling('td').text.split(',')])
+
+        #print(f'Round {round_num} our sections: {our_sections}')
+
+        placements[0] = int(our_placement_td.text.strip())
+        #print(f'Sections: {our_sections}')
+        sections[0] = our_sections
+        for section in our_sections:
+            if bids[0,section] > 0 and bids[0,section] == np.amax(bids[:,section]):
+                moneys[0] -= clearing_prices[section]
+
+        # Now find money and placement for each other team.
+        i = 1
+
+        teams = tbody_tag.find_all('tr')
+        for team in teams:
+            info = team.find_all('td')
+            name = info[0].text.strip()
+
+            if name != 'ModeloTime':
+                placements[i] = int(info[1].text.strip())
+                their_sections = info[2].text.split(',')
+                if their_sections[0] != '':
+                    their_sections = set([int(x) for x in their_sections])
+                    #print(f'their sections: {their_sections}')
+                    sections[i] = their_sections
+                    for section in their_sections:
+                        if bids[i,section] > 0 and bids[i,section] == np.amax(bids[:,section]):
+                            moneys[i] -= clearing_prices[section]
+
+                i += 1
+
+        round_num += 1 
+    #   print(f'Moneys: {moneys}')
+    #print(f'Placements: {placements}')
+
+    # Add money for each team as well as whether we know each section.
+    input.extend(moneys)
+    input.extend([x in sections[0] for x in range(10)])
+
+    # Calculate how many other teams know each section.
+    section_counts = collections.Counter([item for sublist in sections[1:] for item in sublist])
+    input.extend([section_counts[i] for i in range(10)])
+    input.append(round_num)
+
+    #print(f'size: {len(input)}')
+
+    return input
+
+
 def eval_genomes_jungle_multi(genomes, config):
     global graph_info
     global G
