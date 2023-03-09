@@ -370,38 +370,41 @@ def run(config_file):
     # config.genome_config.add_activation('budget_constraint', output_activation)
 
     # Create the population, which is the top-level object for a NEAT run.
-    p = neat.Population(config)
+    # p = neat.Population(config)
 
     # Add a stdout reporter to show progress in the terminal.
-    p.add_reporter(neat.StdOutReporter(True))
-    p.add_reporter(CustomReporter())
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-    p.add_reporter(neat.Checkpointer(5, filename_prefix=f"{args.tower}-checkpoint-"))
-
-    # Run for up to 300 generations.
-    if args.tower == 'j':  
-        winner = p.run(eval_genomes_jungle, args.gens)
-    elif args.tower == 'g':
-        winner = p.run(eval_genomes_ta_g, args.gens)
-    else:
-        winner = p.run(eval_genomes_ta_o, args.gens)
-
-    with open(f"winning_genome.{args.tower}.pkl", "wb") as winning_file:
-        pickle.dump(winner, winning_file)
-    # Display the winning genome.
-    print('\nBest genome:\n{!s}'.format(winner))
-
-
-
-    # p = neat.Checkpointer.restore_checkpoint('neat-checkpoint-final-mean')
     # p.add_reporter(neat.StdOutReporter(True))
+    # p.add_reporter(CustomReporter())
     # stats = neat.StatisticsReporter()
     # p.add_reporter(stats)
-    # p.add_reporter(neat.Checkpointer(5))
-    # winner = p.run(eval_genomes_jungle_multi, 2)
-    # with open("winning_genome.pkl", "wb") as winning_file:
+    # p.add_reporter(neat.Checkpointer(5, filename_prefix=f"{args.tower}-checkpoint-"))
+
+    # # Run for up to 300 generations.
+    # if args.tower == 'j':  
+    #     winner = p.run(eval_genomes_jungle, args.gens)
+    # elif args.tower == 'g':
+    #     winner = p.run(eval_genomes_ta_g, args.gens)
+    # else:
+    #     winner = p.run(eval_genomes_ta_o, args.gens)
+
+    # with open(f"winning_genome.{args.tower}.pkl", "wb") as winning_file:
     #     pickle.dump(winner, winning_file)
+    # # Display the winning genome.
+    # print('\nBest genome:\n{!s}'.format(winner))
+
+
+
+    p = neat.Checkpointer.restore_checkpoint('j-checkpoint-51')
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
+    p.add_reporter(CustomReporter())
+    p.add_reporter(neat.Checkpointer(5))
+    p.config.reproduction_config.elitism = 1
+    p.config.stagnation_config.species_elitism = 1
+    winner = p.run(eval_genomes_jungle, 2)
+    with open("winning_genome.pkl", "wb") as winning_file:
+        pickle.dump(winner, winning_file)
 
 
 if __name__ == '__main__':

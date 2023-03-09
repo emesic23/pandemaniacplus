@@ -111,7 +111,7 @@ def graph_partition(G, num_sections=10):
     
     sections_info = []
     for sg in subgraphs:
-        degrees = dict(sg.degree())
+        degrees = {node : G.degree(node) for node in sg.nodes()}
         highest_degree_node = max(degrees, key=degrees.get)
         highest_degree_val = degrees[highest_degree_node]
         num_nodes = sg.number_of_nodes()
